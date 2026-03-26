@@ -52,7 +52,7 @@ export default function ConversationDetailPage() {
     const [feedback, setFeedback] = useState<any>(null);
     const [history, setHistory] = useState<any[]>([]);
     const [comments, setComments] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [newStatus, setNewStatus] = useState('');
     const [reason, setReason] = useState('');
     const [updating, setUpdating] = useState(false);
@@ -67,21 +67,24 @@ export default function ConversationDetailPage() {
     }, [id]);
 
     const loadAll = async () => {
+        // load feedback first — most critical, unblocks everything
         try {
-            const [fbRes, histRes, commRes] = await Promise.all([
-                getFeedbackById(id),
-                getFeedbackHistory(id),
-                getComments(id),
-            ]);
+            const fbRes = await getFeedbackById(id);
             setFeedback(fbRes.data.data);
-            setHistory(histRes.data.data || []);
-            setComments(commRes.data.data || []);
             setNewStatus(fbRes.data.data.status);
         } catch {
             toast.error('Failed to load conversation');
-        } finally {
-            setLoading(false);
+            return;
         }
+
+        // history and comments load in background — don't block the page
+        getFeedbackHistory(id)
+            .then(r => setHistory(r.data.data || []))
+            .catch(() => { });
+
+        getComments(id)
+            .then(r => setComments(r.data.data || []))
+            .catch(() => { });
     };
 
     const handleUpdateStatus = async () => {
@@ -150,15 +153,9 @@ export default function ConversationDetailPage() {
     const initials = (name: string) =>
         name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '??';
 
-    if (loading) return (
-        <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page, #f2f0eb)', fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#a0a09a' }}>
-            Loading...
-        </div>
-    );
-
     if (!feedback) return (
-        <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page, #f2f0eb)', fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#a0a09a' }}>
-            Conversation not found.
+        <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#a0a09a' }}>
+            Loading conversation...
         </div>
     );
 

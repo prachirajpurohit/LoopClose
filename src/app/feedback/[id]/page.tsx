@@ -67,7 +67,6 @@ export default function ConversationDetailPage() {
     }, [id]);
 
     const loadAll = async () => {
-        // load feedback first — most critical, unblocks everything
         try {
             const fbRes = await getFeedbackById(id);
             setFeedback(fbRes.data.data);
@@ -76,8 +75,6 @@ export default function ConversationDetailPage() {
             toast.error('Failed to load conversation');
             return;
         }
-
-        // history and comments load in background — don't block the page
         getFeedbackHistory(id)
             .then(r => setHistory(r.data.data || []))
             .catch(() => { });
@@ -153,17 +150,29 @@ export default function ConversationDetailPage() {
     const initials = (name: string) =>
         name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '??';
 
-    if (!feedback) return (
-        <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#a0a09a' }}>
-            Loading conversation...
-        </div>
-    );
+    // if (!feedback) return (
+    //     <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#a0a09a' }}>
+    //         Loading conversation...
+    //     </div>
+    // );
 
-    const contact = feedback.customerId;
-    const overdue = isOverdue();
-    const closed = isClosed(feedback.status);
-    const ss = STATUS_STYLES[feedback.status] || STATUS_STYLES.new;
-    const waitingDays = Math.floor((Date.now() - new Date(feedback.createdAt).getTime()) / 86400000);
+    // if (!feedback) return null;
+
+    // const contact = feedback.customerId;
+    // const overdue = isOverdue();
+    // const closed = isClosed(feedback.status);
+    // const ss = STATUS_STYLES[feedback.status] || STATUS_STYLES.new;
+    // const waitingDays = Math.floor((Date.now() - new Date(feedback.createdAt).getTime()) / 86400000);
+
+    const contact = feedback?.customerId;
+    const closed = isClosed(feedback?.status || '');
+    const ss = STATUS_STYLES[feedback?.status] || STATUS_STYLES.new;
+
+    const waitingDays = feedback?.createdAt
+        ? Math.floor((Date.now() - new Date(feedback.createdAt).getTime()) / 86400000)
+        : 0;
+
+    const overdue = feedback ? isOverdue() : false;
 
     return (
         <PageWrapper>
@@ -462,9 +471,9 @@ export default function ConversationDetailPage() {
                         Inbox
                     </button>
                     <div className="topbar-divider" />
-                    <div className="topbar-title">{feedback.title}</div>
+                    <div className="topbar-title">{feedback?.title || '-'}</div>
                     <span className="status-badge" style={{ background: ss.bg, color: ss.color }}>
-                        {STATUS_LABELS[feedback.status] || feedback.status}
+                        {STATUS_LABELS[feedback?.status] || feedback?.status || '-'}
                     </span>
                     {overdue && <span className="overdue-badge">Overdue</span>}
                 </div>
@@ -491,10 +500,10 @@ export default function ConversationDetailPage() {
                         <div className="meta-block">
                             <div className="meta-section-label">Details</div>
                             {[
-                                { label: 'Type', value: TYPE_LABELS[feedback.category] || feedback.category || '—' },
-                                { label: 'Logged', value: getDaysAgo(feedback.createdAt) },
+                                { label: 'Type', value: TYPE_LABELS[feedback?.category] || feedback?.category || '—' },
+                                { label: 'Logged', value: getDaysAgo(feedback?.createdAt) },
                                 { label: 'Segment', value: contact?.segment?.replace(/_/g, ' ') || '—' },
-                                { label: 'Logged by', value: feedback.createdBy?.fullname || '—' },
+                                { label: 'Logged by', value: feedback?.createdBy?.fullname || '—' },
                             ].map(row => (
                                 <div key={row.label} className="meta-row">
                                     <span className="meta-key">{row.label}</span>
@@ -537,10 +546,10 @@ export default function ConversationDetailPage() {
                             {/* Message */}
                             <div className="message-card fade-up">
                                 <div className="message-section-label">Their message</div>
-                                <div className="message-title">{feedback.title}</div>
-                                <div className="message-body">{feedback.description}</div>
+                                <div className="message-title">{feedback?.title || '-'}</div>
+                                <div className="message-body">{feedback?.description}</div>
                                 <div className="message-meta">
-                                    {contact?.email && <>{contact.email} · </>}{getDaysAgo(feedback.createdAt)}
+                                    {contact?.email && <>{contact?.email} · </>}{getDaysAgo(feedback?.createdAt)}
                                 </div>
                             </div>
 

@@ -473,7 +473,8 @@ export default function DashboardPage() {
                                 { label: 'Total conversations', value: stats?.totalFeedback ?? feedback.length },
                                 { label: 'Loops closed', value: stats?.byStatus?.completed ?? closedCount, cls: 'success' },
                                 { label: 'Overdue (2d+)', value: overdueCount, cls: overdueCount > 0 ? 'danger' : '' },
-                                { label: 'Open', value: stats?.byStatus?.new ?? openCount },
+                                // { label: 'Open', value: stats?.byStatus?.new ?? openCount },
+                                { label: 'Open', value: openCount },
                             ].map(m => (
                                 <div key={m.label} className="metric-card">
                                     <div className="metric-label">{m.label}</div>

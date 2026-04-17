@@ -471,7 +471,8 @@ export default function DashboardPage() {
                         <div className="metrics-grid fade-up">
                             {[
                                 { label: 'Total conversations', value: stats?.totalFeedback ?? feedback.length },
-                                { label: 'Loops closed', value: stats?.byStatus?.completed ?? closedCount, cls: 'success' },
+                                { label: 'Loops closed', value: closedCount, cls: 'success' },
+                                // { label: 'Loops closed', value: stats?.byStatus?.completed ?? closedCount, cls: 'success' },
                                 { label: 'Overdue (2d+)', value: overdueCount, cls: overdueCount > 0 ? 'danger' : '' },
                                 // { label: 'Open', value: stats?.byStatus?.new ?? openCount },
                                 { label: 'Open', value: openCount },
